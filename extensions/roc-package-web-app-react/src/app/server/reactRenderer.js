@@ -1,4 +1,4 @@
-import config from 'config';
+import { config as nodeConfig } from 'config';
 import debug from 'debug';
 import nunjucks from 'nunjucks';
 import serialize from 'serialize-javascript';
@@ -11,6 +11,7 @@ import Helmet from 'react-helmet';
 import { triggerHooks, useRedial } from 'react-router-redial';
 import { getAbsolutePath, getSettings } from 'roc';
 import ServerStatus from 'react-server-status';
+import pick from 'lodash.pick';
 
 import myPath from './helpers/myPath';
 
@@ -19,13 +20,7 @@ const log = debug('roc:react-render');
 
 const rocConfig = getSettings();
 
-const whiteListed = () => (
-    rocConfig.runtime.configWhitelistProperty ?
-        config[rocConfig.runtime.configWhitelistProperty] :
-        undefined
-);
-
-const appConfig = whiteListed();
+const config = rocConfig.runtime.configProvider || nodeConfig;
 
 export function initRenderPage({ script, css }, distMode, devMode, Header) {
     const templatePath = rocConfig.runtime.template.path || `${myPath}/views`;
@@ -37,6 +32,7 @@ export function initRenderPage({ script, css }, distMode, devMode, Header) {
     const styleName = css[0];
 
     return (
+        req,
         head,
         content = '',
         fluxState = {},
@@ -46,6 +42,8 @@ export function initRenderPage({ script, css }, distMode, devMode, Header) {
         const { dev, build, ...rest } = rocConfig; // eslint-disable-line
 
         const rocConfigClient = distMode ? rest : { ...rest, dev };
+
+        const appConfig = pick(config(req) [].concat(rocConfig.runtime.configWhitelistProperty)); 
 
         // If we have no head we will generate it
         if (!head) {

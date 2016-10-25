@@ -44,7 +44,7 @@ export default function reactRouter({
                 }
 
                 this.status = 200;
-                this.body = renderPage();
+                this.body = renderPage(this);
             } else {
                 const { store, history, url } = setupForRender(createStore, this.url, rocPath);
 
@@ -67,7 +67,7 @@ export default function reactRouter({
                     history,
                     store,
                     createRoutes,
-                    renderPage,
+                    renderPage.bind(renderPage, this),
                     koaState: this.state,
                     hasTemplateValues,
                     templateValues,
@@ -84,7 +84,7 @@ export default function reactRouter({
         } catch (error) {
             log('Render error', pretty.render(error));
             this.status = 500;
-            this.body = renderPage();
+            this.body = renderPage(this);
         }
     };
 }
